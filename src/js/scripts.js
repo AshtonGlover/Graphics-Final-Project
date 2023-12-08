@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import {RGBELoader} from 'three/examples/jsm/loaders/RGBELoader.js';
+
+const hdrTextureURL = new URL('../img/MR_INT-006_LoftIndustrialWindow_Griffintown.hdr', import.meta.url);
 
 const renderer = new THREE.WebGLRenderer({antialias: true});
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -23,9 +26,64 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 camera.position.set(6, 8, 14);
 orbit.update();
 
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 2;
+
+const loader = new RGBELoader();
+loader.load(hdrTextureURL, function(texture) {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.background = texture;
+    // scene.background = 0x00000,
+    // scene.environment = texture;
+
+    const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(2, 50, 50),
+        new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            metalness: 0,
+            // color: 0xFFEA00
+            envMap: texture,
+            transmission: 1
+        })
+    );
+    scene.add(sphere);
+    sphere.position.x = 0;
+
+    const sphere2 = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 50, 50),
+        new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            metalness: 0,
+            color: 0xFFEA00,
+            envMap: texture,
+            transmission: 1
+        
+        })
+    );
+
+    scene.add(sphere2);
+    sphere2.position.x = -3.5;
+
+    const sphere3 = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 50, 50),
+        new THREE.MeshPhysicalMaterial({
+            roughness: 0,
+            metalness: 0,
+            color: 0x25A7F9,
+            envMap: texture,
+            transmission: 1
+        
+        })
+    );
+    scene.add(sphere3);
+    sphere3.position.x = 3.5;
+
+});
+
 // Sets a 12 by 12 gird helper
 const gridHelper = new THREE.GridHelper(12, 12);
-scene.add(gridHelper);
+// scene.add(gridHelper);
 
 // Sets the x, y, and z axes with each having a length of 4
 const axesHelper = new THREE.AxesHelper(4);
